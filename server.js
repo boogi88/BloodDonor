@@ -5,6 +5,19 @@ var mongoose = require('mongoose');
 var fs = require('fs');
 
 var app = express();
+ // parse application/json
+    app.use(bodyParser.json());                        
+
+    // parse application/x-www-form-urlencoded
+    app.use(bodyParser.urlencoded({ extended: true }));
+
+    // parse multipart/form-data
+ //   app.use(multer());
+
+ fs.readdirSync(__dirname + '/models').forEach(function(filename) {
+  if (~filename.indexOf('.js')) require(__dirname + '/models/' + filename)
+});
+
 
 JSON.stringifyOnce = function(obj, replacer, indent){
     var printedObjects = [];
@@ -77,9 +90,20 @@ app.get('/register', function(req, res){
 });
 app.post('/registerSave', function(req, res){
   //res.sendfile(__dirname + '/html/register.html');
-  var strObj = JSON.stringifyOnce(res);
+/*  var strObj = JSON.stringifyOnce(res);
   strObj = strObj.replace('/\,/g','<br>');
-  res.send(strObj);
+  res.send(strObj);*/
+  //res.send(req.body);
+  mongoose.model("donors")({
+  name: {first : req.body.first_name, last: req.body.first_name},
+  email : req.body.email,
+  password : req.body.password,
+  bloodGroup : req.body.blood_group
+}).save(function(err,doc){
+    if(err) res.json(err);
+    else res.writeHead(302,{'Location':'/donors'});
+    res.end();
+  })
   
 });
 
